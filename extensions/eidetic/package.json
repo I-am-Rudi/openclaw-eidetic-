@@ -1,0 +1,31 @@
+{
+  "name": "@openclaw/eidetic",
+  "version": "2026.3.26",
+  "description": "Hierarchical Agentic Memory System: Zettelkasten (Tier 1) + Hippocampus Tiny-LLM (Tier 2) + Frontier Model (Tier 3)",
+  "type": "module",
+  "devDependencies": {
+    "openclaw": "workspace:*"
+  },
+  "peerDependencies": {
+    "openclaw": ">=2026.3.26"
+  },
+  "peerDependenciesMeta": {
+    "openclaw": {
+      "optional": true
+    }
+  },
+  "openclaw": {
+    "extensions": [
+      "./index.ts"
+    ],
+    "install": {
+      "npmSpec": "@openclaw/eidetic",
+      "localPath": "extensions/eidetic",
+      "defaultChoice": "npm",
+      "minHostVersion": ">=2026.3.26"
+    },
+    "release": {
+      "publishToNpm": true
+    }
+  }
+}
