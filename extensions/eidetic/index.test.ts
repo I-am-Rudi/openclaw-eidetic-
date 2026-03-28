@@ -220,7 +220,9 @@ describe("createEideticTools", () => {
     const searchTool = tools.find((t) => t.name === "search_notes")!;
     const result = await searchTool.execute("call-1", { query: "cognitive science" });
     const parsed = (result as { details: unknown }).details as Record<string, unknown>;
-    expect(Array.isArray(parsed.results) && (parsed.results as unknown[]).length).toBeGreaterThan(0);
+    expect(Array.isArray(parsed.results) && (parsed.results as unknown[]).length).toBeGreaterThan(
+      0,
+    );
   });
 
   it("read_note returns error for unknown note", async () => {

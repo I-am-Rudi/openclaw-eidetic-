@@ -8,6 +8,7 @@
  *   read_note(filename_or_id)              – full note content + metadata
  */
 
+import { Static, Type } from "@sinclair/typebox";
 import { jsonResult } from "../api.js";
 import type { AnyAgentTool } from "../api.js";
 import type { EideticConfig } from "./config.js";
@@ -32,6 +33,41 @@ function formatNote(note: ZettelNote): Record<string, unknown> {
 }
 
 // ============================================================================
+// TypeBox schemas
+// ============================================================================
+
+const SearchNotesSchema = Type.Object(
+  {
+    query: Type.String({ description: "The search query (keywords or a short phrase)." }),
+    maxResults: Type.Optional(
+      Type.Number({ description: "Maximum number of notes to return (default: 8).", minimum: 1 }),
+    ),
+  },
+  { additionalProperties: false },
+);
+type SearchNotesParams = Static<typeof SearchNotesSchema>;
+
+const NoteIdSchema = Type.Object(
+  {
+    note_id: Type.String({ description: "Note ID (UUID) or exact title." }),
+  },
+  { additionalProperties: false },
+);
+type NoteIdParams = Static<typeof NoteIdSchema>;
+
+function buildTraverseGraphSchema(maxDepth: number) {
+  return Type.Object(
+    {
+      start_node: Type.String({ description: "Note ID (UUID) or exact title to start from." }),
+      depth: Type.Optional(
+        Type.Number({ description: `Traversal depth (1–${maxDepth}, default: 2).`, minimum: 1 }),
+      ),
+    },
+    { additionalProperties: false },
+  );
+}
+
+// ============================================================================
 // Tool factories
 // ============================================================================
 
@@ -47,27 +83,15 @@ export function createEideticTools(opts: {
   // --------------------------------------------------------------------------
   const searchNotesTool: AnyAgentTool = {
     name: "search_notes",
+    label: "Search Notes",
     description:
       "Search the Zettelkasten knowledge base for notes relevant to a query. " +
       "Returns a ranked list of notes with excerpt and metadata.",
-    parameters: {
-      type: "object",
-      properties: {
-        query: {
-          type: "string",
-          description: "The search query (keywords or a short phrase).",
-        },
-        maxResults: {
-          type: "number",
-          description: "Maximum number of notes to return (default: 8).",
-        },
-      },
-      required: ["query"],
-    },
-    execute: async (_toolCallId, params) => {
-      const p = params as Record<string, unknown>;
-      const query = typeof p.query === "string" ? p.query : "";
-      const maxResults = typeof p.maxResults === "number" ? p.maxResults : 8;
+    parameters: SearchNotesSchema,
+    execute: async (_toolCallId, rawParams) => {
+      const params = rawParams as SearchNotesParams;
+      const query = params.query;
+      const maxResults = params.maxResults ?? 8;
       if (!query) {
         return jsonResult({ results: [], error: "query required" });
       }
@@ -88,24 +112,15 @@ export function createEideticTools(opts: {
   // --------------------------------------------------------------------------
   const getBacklinksTool: AnyAgentTool = {
     name: "get_backlinks",
+    label: "Get Backlinks",
     description:
       "Find all Zettelkasten notes that link to the given note. " +
       "Accepts a note ID or an exact title. Returns a list of linking notes.",
-    parameters: {
-      type: "object",
-      properties: {
-        note_id: {
-          type: "string",
-          description: "Note ID (UUID) or exact title.",
-        },
-      },
-      required: ["note_id"],
-    },
-    execute: async (_toolCallId, params) => {
-      const p = params as Record<string, unknown>;
-      const noteId = typeof p.note_id === "string" ? p.note_id : "";
+    parameters: NoteIdSchema,
+    execute: async (_toolCallId, rawParams) => {
+      const params = rawParams as NoteIdParams;
       const store = storeFactory();
-      const backlinks = await store.backlinks(noteId);
+      const backlinks = await store.backlinks(params.note_id);
       return jsonResult({ backlinks: backlinks.map(formatNote) });
     },
   };
@@ -113,31 +128,21 @@ export function createEideticTools(opts: {
   // --------------------------------------------------------------------------
   // traverse_graph
   // --------------------------------------------------------------------------
+  const TraverseGraphSchema = buildTraverseGraphSchema(maxGraphDepth);
+  type TraverseGraphParams = Static<typeof TraverseGraphSchema>;
+
   const traverseGraphTool: AnyAgentTool = {
     name: "traverse_graph",
+    label: "Traverse Graph",
     description:
       "Traverse the Zettelkasten link graph starting from a note, following outgoing " +
       "wikilinks and frontmatter links. Returns all reachable notes up to the given depth.",
-    parameters: {
-      type: "object",
-      properties: {
-        start_node: {
-          type: "string",
-          description: "Note ID (UUID) or exact title to start from.",
-        },
-        depth: {
-          type: "number",
-          description: `Traversal depth (1–${maxGraphDepth}, default: 2).`,
-        },
-      },
-      required: ["start_node"],
-    },
-    execute: async (_toolCallId, params) => {
-      const p = params as Record<string, unknown>;
-      const startNode = typeof p.start_node === "string" ? p.start_node : "";
-      const depth = typeof p.depth === "number" ? p.depth : 2;
+    parameters: TraverseGraphSchema,
+    execute: async (_toolCallId, rawParams) => {
+      const params = rawParams as TraverseGraphParams;
+      const depth = params.depth ?? 2;
       const store = storeFactory();
-      const reachable = await store.traverseGraph(startNode, depth, maxGraphDepth);
+      const reachable = await store.traverseGraph(params.start_node, depth, maxGraphDepth);
       return jsonResult({ nodes: reachable.map(formatNote) });
     },
   };
@@ -147,26 +152,17 @@ export function createEideticTools(opts: {
   // --------------------------------------------------------------------------
   const readNoteTool: AnyAgentTool = {
     name: "read_note",
+    label: "Read Note",
     description:
       "Read the full content and YAML metadata of a specific Zettelkasten note. " +
-      "Accepts a note ID, exact title.",
-    parameters: {
-      type: "object",
-      properties: {
-        note_id: {
-          type: "string",
-          description: "Note ID (UUID) or exact title.",
-        },
-      },
-      required: ["note_id"],
-    },
-    execute: async (_toolCallId, params) => {
-      const p = params as Record<string, unknown>;
-      const noteId = typeof p.note_id === "string" ? p.note_id : "";
+      "Accepts a note ID or exact title.",
+    parameters: NoteIdSchema,
+    execute: async (_toolCallId, rawParams) => {
+      const params = rawParams as NoteIdParams;
       const store = storeFactory();
-      const note = await store.resolve(noteId);
+      const note = await store.resolve(params.note_id);
       if (!note) {
-        return jsonResult({ error: `Note not found: ${noteId}` });
+        return jsonResult({ error: `Note not found: ${params.note_id}` });
       }
       return jsonResult({ note: formatNote(note) });
     },

@@ -3,6 +3,9 @@
   "version": "2026.3.26",
   "description": "Hierarchical Agentic Memory System: Zettelkasten (Tier 1) + Hippocampus Tiny-LLM (Tier 2) + Frontier Model (Tier 3)",
   "type": "module",
+  "dependencies": {
+    "@sinclair/typebox": "0.34.48"
+  },
   "devDependencies": {
     "openclaw": "workspace:*"
   },

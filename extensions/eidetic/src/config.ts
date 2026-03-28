@@ -85,4 +85,3 @@ STRICT RULES:
 FORMAT:
 BRIEFING:
 <your synthesised context here>`;
-
