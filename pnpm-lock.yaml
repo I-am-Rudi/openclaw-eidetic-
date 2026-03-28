@@ -343,6 +343,12 @@ importers:
 
   extensions/duckduckgo: {}
 
+  extensions/eidetic:
+    devDependencies:
+      openclaw:
+        specifier: workspace:*
+        version: link:../..
+
   extensions/elevenlabs: {}
 
   extensions/exa: {}

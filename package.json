@@ -656,6 +656,10 @@
       "types": "./dist/plugin-sdk/zod.d.ts",
       "default": "./dist/plugin-sdk/zod.js"
     },
+    "./plugin-sdk/eidetic": {
+      "types": "./dist/plugin-sdk/eidetic.d.ts",
+      "default": "./dist/plugin-sdk/eidetic.js"
+    },
     "./extension-api": "./dist/extensionAPI.js",
     "./cli-entry": "./openclaw.mjs"
   },

@@ -4020,6 +4020,83 @@ export const GENERATED_BUNDLED_PLUGIN_METADATA = [
     },
   },
   {
+    dirName: "eidetic",
+    idHint: "eidetic",
+    source: {
+      source: "./index.ts",
+      built: "index.js",
+    },
+    packageName: "@openclaw/eidetic",
+    packageVersion: "2026.3.26",
+    packageDescription:
+      "Hierarchical Agentic Memory System: Zettelkasten (Tier 1) + Hippocampus Tiny-LLM (Tier 2) + Frontier Model (Tier 3)",
+    packageManifest: {
+      extensions: ["./index.ts"],
+      install: {
+        npmSpec: "@openclaw/eidetic",
+        localPath: "extensions/eidetic",
+        defaultChoice: "npm",
+        minHostVersion: ">=2026.3.26",
+      },
+    },
+    manifest: {
+      id: "eidetic",
+      kind: "memory",
+      configSchema: {
+        type: "object",
+        additionalProperties: false,
+        properties: {
+          zettelkastenDir: { type: "string" },
+          ollamaBaseUrl: { type: "string" },
+          hippoModel: { type: "string" },
+          autoRecall: { type: "boolean" },
+          autoConsolidate: { type: "boolean" },
+          maxContextNotes: { type: "number", minimum: 1, maximum: 50 },
+          maxGraphDepth: { type: "number", minimum: 1, maximum: 5 },
+        },
+      },
+      uiHints: {
+        zettelkastenDir: {
+          label: "Zettelkasten Directory",
+          placeholder: "~/.openclaw/zettelkasten",
+          help: "Absolute or ~-relative path to the folder containing your .md notes",
+          advanced: true,
+        },
+        ollamaBaseUrl: {
+          label: "Ollama Base URL",
+          placeholder: "http://localhost:11434",
+          help: "Base URL of your local Ollama instance (Tier 2 Hippocampus)",
+          advanced: true,
+        },
+        hippoModel: {
+          label: "Hippocampus Model",
+          placeholder: "llama3:8b",
+          help: "Ollama model used as the Tier 2 graph-traversal librarian",
+        },
+        autoRecall: {
+          label: "Auto-Recall",
+          help: "Automatically inject Zettelkasten context into each conversation",
+        },
+        autoConsolidate: {
+          label: "Auto-Consolidate",
+          help: "Automatically write new notes from conversations when you are idle",
+        },
+        maxContextNotes: {
+          label: "Max Context Notes",
+          placeholder: "8",
+          help: "Maximum number of notes the Hippocampus may retrieve per turn",
+          advanced: true,
+        },
+        maxGraphDepth: {
+          label: "Max Graph Depth",
+          placeholder: "3",
+          help: "Maximum link-traversal depth for traverse_graph (1–5)",
+          advanced: true,
+        },
+      },
+    },
+  },
+  {
     dirName: "elevenlabs",
     idHint: "elevenlabs",
     source: {
